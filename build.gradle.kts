@@ -11,6 +11,7 @@ buildscript {
 
 apply {
     plugin("kotlin")
+    from("gradle/plugins/maven-simple.gradle")
 }
 
 val kotlinVersion = "1.0.3"
