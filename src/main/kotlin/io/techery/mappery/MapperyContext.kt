@@ -1,6 +1,6 @@
 package io.techery.mappery
 
-interface Context {
+interface MapperyContext {
 
     fun <T> convert(source: Any, clazzTo: Class<T>): T
 }

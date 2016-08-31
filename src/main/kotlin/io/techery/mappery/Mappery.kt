@@ -4,9 +4,9 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
-class Mappery(private val converters: ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>>) : Context {
+class Mappery private constructor(private val converters: ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>>) : MapperyContext {
 
-    private val context = ContextWrapper(this)
+    private val context = MapperyContextWrapper(this)
 
     override fun <T> convert(source: Any, clazzTo: Class<T>): T {
         val converter = converter(source.javaClass, clazzTo) ?:
@@ -83,7 +83,7 @@ class Mappery(private val converters: ConcurrentMap<Pair<Class<*>, Class<*>>, Co
         fun build(): Mappery
     }
 
-    internal class ContextWrapper(private val context: Context) : Context {
+    internal class MapperyContextWrapper(private val context: MapperyContext) : MapperyContext {
 
         override fun <T> convert(source: Any, clazzTo: Class<T>): T {
             return context.convert(source, clazzTo)
