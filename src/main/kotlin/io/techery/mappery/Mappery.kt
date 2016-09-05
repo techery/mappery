@@ -14,6 +14,11 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
         return converter.convert(context, source)
     }
 
+
+    override fun <T> convert(source: Collection<*>, clazzTo: Class<T>): Collection<T> {
+        return source.map { convert(it!!, clazzTo) }
+    }
+
     private fun <S, T> converter(sourceClazz: Class<S>, targetClazz: Class<T>): Converter<S, T>? {
         return converters[Pair(sourceClazz, targetClazz)] as? Converter<S, T>
     }
@@ -84,8 +89,11 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
     }
 
     internal class MapperyContextWrapper(private val context: MapperyContext) : MapperyContext {
-
         override fun <T> convert(source: Any, clazzTo: Class<T>): T {
+            return context.convert(source, clazzTo)
+        }
+
+        override fun <T> convert(source: Collection<*>, clazzTo: Class<T>): Collection<T> {
             return context.convert(source, clazzTo)
         }
     }
