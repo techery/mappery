@@ -15,7 +15,7 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
     }
 
 
-    override fun <T> convert(source: Collection<*>, clazzTo: Class<T>): Collection<T> {
+    override fun <T> convert(source: Iterable<*>, clazzTo: Class<T>): List<T> {
         return source.map { convert(it!!, clazzTo) }
     }
 
@@ -93,7 +93,7 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
             return context.convert(source, clazzTo)
         }
 
-        override fun <T> convert(source: Collection<*>, clazzTo: Class<T>): Collection<T> {
+        override fun <T> convert(source: Iterable<*>, clazzTo: Class<T>): List<T> {
             return context.convert(source, clazzTo)
         }
     }
