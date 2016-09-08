@@ -20,7 +20,14 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
     }
 
     private fun <S, T> converter(sourceClazz: Class<S>, targetClazz: Class<T>): Converter<S, T>? {
-        return converters[Pair(sourceClazz, targetClazz)] as? Converter<S, T>
+        val key = converters.keys.find {
+            sourceClazz.isAssignableFrom(it.first)
+                    && it.second.isAssignableFrom(targetClazz)
+        }
+        if (key != null) {
+            return converters[key] as? Converter<S, T>
+        }
+        return null
     }
 
     class Builder : MapperyBuilder {
