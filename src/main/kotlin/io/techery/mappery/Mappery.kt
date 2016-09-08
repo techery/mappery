@@ -9,7 +9,7 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
     private val context = MapperyContextWrapper(this)
 
     override fun <T> convert(source: Any, clazzTo: Class<T>): T {
-        val converter = converter(source.javaClass, clazzTo) ?:
+        val converter = converters.find(source.javaClass, clazzTo) ?:
                 throw NullPointerException("Converter to convert ${source.javaClass} to $clazzTo is not found")
         return converter.convert(context, source)
     }
@@ -43,9 +43,9 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
                 sclass = PRIMITIVES[sclass] ?:
                         throw IllegalArgumentException("Couldn't find any wrapper fro primitive class $sourceClass")
             }
+
             val key = Pair(sclass, targetClass)
-            if (converters.contains(key)
-                    && converters[key] != converter) {
+            if (converters.find(sclass, targetClass) != null) {
                 throw IllegalArgumentException("Converter to convert $sourceClass to $targetClass is already registered")
             }
             converters[key] = converter
@@ -102,6 +102,19 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
 
         override fun <T> convert(source: Iterable<*>, clazzTo: Class<T>): List<T> {
             return context.convert(source, clazzTo)
+        }
+    }
+
+    private companion object {
+        fun <S, T> ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>>.find(sourceClazz: Class<S>, targetClazz: Class<T>): Converter<S, T>? {
+            val key = keys.find {
+                sourceClazz.isAssignableFrom(it.first)
+                        && it.second.isAssignableFrom(targetClazz)
+            }
+            if (key != null) {
+                return this[key] as? Converter<S, T>
+            }
+            return null
         }
     }
 }
