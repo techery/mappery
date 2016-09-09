@@ -1,17 +1,16 @@
 package io.techery.mappery
 
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 
-class Mappery private constructor(private val converters: ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>>) : MapperyContext {
+class Mappery private constructor(private val converters: List<ConverterHolder<*, *>>) : MapperyContext {
 
     private val context = MapperyContextWrapper(this)
 
     override fun <T> convert(source: Any, clazzTo: Class<T>): T {
-        val converter = converters.find(source.javaClass, clazzTo) ?:
+        val holder = converters.find(source.javaClass, clazzTo) ?:
                 throw NullPointerException("Converter to convert ${source.javaClass} to $clazzTo is not found")
-        return converter.convert(context, source)
+        val converter: Converter<Any, T> = holder.converter as Converter<Any, T>
+        return converter.convert(context, holder.sourceClass.cast(source))
     }
 
 
@@ -19,19 +18,8 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
         return source.map { convert(it!!, clazzTo) }
     }
 
-    private fun <S, T> converter(sourceClazz: Class<S>, targetClazz: Class<T>): Converter<S, T>? {
-        val key = converters.keys.find {
-            sourceClazz.isAssignableFrom(it.first)
-                    && it.second.isAssignableFrom(targetClazz)
-        }
-        if (key != null) {
-            return converters[key] as? Converter<S, T>
-        }
-        return null
-    }
-
     class Builder : MapperyBuilder {
-        private val converters: ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>> = ConcurrentHashMap()
+        private val converters: MutableList<ConverterHolder<*, *>> = ArrayList()
 
         override fun <T> map(clazz: Class<T>): ClassBuilder<T> {
             return ClassBuilder(this, clazz)
@@ -43,12 +31,10 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
                 sclass = PRIMITIVES[sclass] ?:
                         throw IllegalArgumentException("Couldn't find any wrapper fro primitive class $sourceClass")
             }
-
-            val key = Pair(sclass, targetClass)
             if (converters.find(sclass, targetClass) != null) {
                 throw IllegalArgumentException("Converter to convert $sourceClass to $targetClass is already registered")
             }
-            converters[key] = converter
+            converters.add(ConverterHolder(sclass, targetClass, converter))
         }
 
         override fun build(): Mappery = Mappery(converters)
@@ -105,16 +91,15 @@ class Mappery private constructor(private val converters: ConcurrentMap<Pair<Cla
         }
     }
 
+    internal data class ConverterHolder<S, T>(val sourceClass: Class<S>, val targetClass: Class<T>, val converter: Converter<*, *>)
+
     private companion object {
-        fun <S, T> ConcurrentMap<Pair<Class<*>, Class<*>>, Converter<*, *>>.find(sourceClazz: Class<S>, targetClazz: Class<T>): Converter<S, T>? {
-            val key = keys.find {
-                sourceClazz.isAssignableFrom(it.first)
-                        && it.second.isAssignableFrom(targetClazz)
+        fun <S, T> List<ConverterHolder<*, *>>.find(sourceClazz: Class<S>, targetClazz: Class<T>): ConverterHolder<S, T>? {
+            val holder = find {
+                it.sourceClass.isAssignableFrom(sourceClazz)
+                        && it.targetClass.isAssignableFrom(targetClazz)
             }
-            if (key != null) {
-                return this[key] as? Converter<S, T>
-            }
-            return null
+            return holder as ConverterHolder<S, T>?
         }
     }
 }
