@@ -14,7 +14,7 @@ apply {
     from("gradle/plugins/maven-simple.gradle")
 }
 
-val kotlinVersion = "1.0.3"
+val kotlinVersion = "1.1.1"
 
 configure<JavaPluginConvention> {
     setSourceCompatibility(1.6)
