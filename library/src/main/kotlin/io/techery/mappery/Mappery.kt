@@ -96,8 +96,7 @@ class Mappery private constructor(private val converters: List<ConverterHolder<*
     private companion object {
         fun <S, T> List<ConverterHolder<*, *>>.find(sourceClazz: Class<S>, targetClazz: Class<T>): ConverterHolder<S, T>? {
             val holder = find {
-                it.sourceClass.isAssignableFrom(sourceClazz)
-                        && it.targetClass.isAssignableFrom(targetClazz)
+                it.sourceClass.isAssignableFrom(sourceClazz) && it.targetClass == targetClazz
             }
             return holder as ConverterHolder<S, T>?
         }
