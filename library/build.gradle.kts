@@ -16,9 +16,11 @@ repositories {
     jcenter()
 }
 
+val kotlinVersion: String = "1.1.61"
+
 dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(kotlin("reflect"))
+    implementation(kotlin("stdlib", kotlinVersion))
+    implementation(kotlin("reflect", kotlinVersion))
     testImplementation("junit:junit:4.12")
     testImplementation("org.assertj:assertj-core:3.8.0")
     testImplementation("org.jetbrains.spek:spek-api:1.1.2")
