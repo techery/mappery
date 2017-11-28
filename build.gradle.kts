@@ -14,7 +14,7 @@ apply {
     from("gradle/plugins/maven-simple.gradle")
 }
 
-val kotlinVersion = "1.1.1"
+val kotlinVersion = "1.1.61"
 
 configure<JavaPluginConvention> {
     setSourceCompatibility(1.6)
@@ -23,14 +23,18 @@ configure<JavaPluginConvention> {
 
 repositories {
     gradleScriptKotlin()
+    maven { setUrl("http://central.maven.org/maven2/") }
 }
 
 dependencies {
-    compile(kotlin("stdlib"))
-    testCompile("junit:junit:4.12")
-    testCompile("org.assertj:assertj-core:1.7.1")
-    testCompile("org.jetbrains.spek:spek:1.0.9")
-    testCompile("com.nhaarman:mockito-kotlin:0.5.0")
+    implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.assertj:assertj-core:3.8.0")
+    testImplementation("org.jetbrains.spek:spek-api:1.1.2")
+    testImplementation("org.jetbrains.spek:spek-junit-platform-engine:1.1.2")
+    testImplementation("org.junit.platform:junit-platform-runner:1.0.0-M4")
+    testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
 }
 
 fun kotlin(module: String) = "org.jetbrains.kotlin:kotlin-$module:$kotlinVersion"

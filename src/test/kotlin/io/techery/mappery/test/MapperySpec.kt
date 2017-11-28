@@ -3,8 +3,13 @@ package io.techery.mappery.test
 import io.techery.mappery.Mappery
 import io.techery.mappery.test.converter.*
 import org.jetbrains.spek.api.Spek
-import kotlin.test.assertNotNull
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.it
+import org.junit.Assert.assertNotNull
+import org.junit.platform.runner.JUnitPlatform
+import org.junit.runner.RunWith
 
+@RunWith(JUnitPlatform::class)
 class MapperySpec : Spek({
 
     describe("Mappery Testing") {
@@ -17,6 +22,7 @@ class MapperySpec : Spek({
                     .from(ABConverter.A::class.java, ABConverter())
                     .build()
             var str = mappery.convert(Int.MAX_VALUE, String::class.java)
+            assertNotNull(str)
             str = mappery.convert(ABConverter.B(), String::class.java)
             assertNotNull(str)
             str = mappery.convert(Double.MAX_VALUE, String::class.java)
@@ -33,6 +39,19 @@ class MapperySpec : Spek({
             val intValue = mappery.convert(string, Int::class.java)
             assertNotNull(intValue)
             val doubleValue = mappery.convert(string, Double::class.java)
+            assertNotNull(doubleValue)
+        }
+
+        it("should map target class to inherited classes") {
+            val mappery = Mappery.Builder()
+                    .map(ModelA::class.java)
+                    .to(ModelB::class.java, ModelAToModelBConverter())
+                    .to(ModelC::class.java, ModelAToModelCConverter())
+                    .build()
+            val a = ModelA()
+            val intValue = mappery.convert(a, ModelB::class.java)
+            assertNotNull(intValue)
+            val doubleValue = mappery.convert(a, ModelC::class.java)
             assertNotNull(doubleValue)
         }
     }
